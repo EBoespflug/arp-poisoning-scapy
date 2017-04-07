@@ -1,25 +1,27 @@
 from PyQt5.QtCore import (QFile, QFileInfo, QPoint, QRect, QSettings, QSize,
         Qt, QTextStream)
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow,
-        QMessageBox, QTextEdit)
+from PyQt5.QtWidgets import (QHBoxLayout, QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QTextEdit)
+
+import sys
+sys.path.append('core/')
+sys.path.append('UI/')
+
+from Host import *
+from scan_subnet import *
+from host_widgets import *
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.textEdit = QTextEdit()
-        self.setCentralWidget(self.textEdit)
-
         self.createActions()
         self.createMenus()
         self.createToolBars()
+        self.createWidgets()
 
         self.loadSettings()
 
-    def closeEvent(self, event):
-        self.saveSettings()
-        event.accept()
 
     def about(self):
         QMessageBox.about(self, "ARP Poisoning", self.tr("TODO()"))
@@ -50,6 +52,10 @@ class MainWindow(QMainWindow):
         self.settings = QSettings("EBoespflug", "arp_poisoning_scapy")
         self.settings.setValue("MainWindow/geometry", self.saveGeometry())
         self.settings.setValue("MainWindow/state", self.saveState())
+
+    def createWidgets(self):
+        self.hostList = HostListWidget()
+        self.setCentralWidget(self.hostList)
 
 if __name__ == '__main__':
     import sys
