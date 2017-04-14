@@ -10,6 +10,9 @@ sys.path.append('UI/')
 from Host import *
 from scan_subnet import *
 from host_widgets import *
+from scapy.all import conf
+
+conf.verb = 0
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,18 +24,20 @@ class MainWindow(QMainWindow):
         self.createWidgets()
 
         self.loadSettings()
-
+        self.setMinimumSize(800, 600)
 
     def about(self):
         QMessageBox.about(self, "ARP Poisoning", self.tr("TODO()"))
 
     def scanSubnet(self):
-        pass
+        hosts = arping("192.168.1.*")
+        #hosts = [Host("", "", "")]
+        print(hosts)
+        self.hostList.refreshHosts(hosts)
 
     def createActions(self):
         rootFolder = QFileInfo(__file__).absolutePath()
-        self.act_scanSubnet = QAction(QIcon(rootFolder + '/images/scanSubnet.png'), "&New", self, shortcut=QKeySequence.Refresh, statusTip="Scan subnet",
-                triggered=self.scanSubnet)
+        self.act_scanSubnet = QAction(QIcon(rootFolder + '/images/scanSubnet.png'), "&New", self, shortcut=QKeySequence.Refresh, statusTip="Scan subnet", triggered=self.scanSubnet)
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
