@@ -1,0 +1,16 @@
+<!DOCTYPE RCC>
+<RCC>
+    <qresource prefix="/ico">
+        <file alias="scan">ico/scan.png</file>
+        <file alias="about">ico/about.png</file>
+        <file alias="console">ico/console.png</file>
+        <file alias="disconnected">ico/disconnected.png</file>
+        <file alias="home">ico/home.png</file>
+        <file alias="options">ico/options.png</file>
+        <file alias="poisoning">ico/poisoning.png</file>
+        <file alias="notPoisoning">ico/notPoisoning.png</file>
+        <file alias="delete">ico/delete.png</file>
+        <file alias="qt">ico/qt.png</file>
+        <file alias="connected">ico/connected.png</file>
+    </qresource>
+</RCC>

@@ -11,6 +11,7 @@ from Host import *
 from scan_subnet import *
 from host_widgets import *
 from scapy.all import conf
+import resources
 
 conf.verb = 0
 
@@ -37,7 +38,7 @@ class MainWindow(QMainWindow):
 
     def createActions(self):
         rootFolder = QFileInfo(__file__).absolutePath()
-        self.act_scanSubnet = QAction(QIcon(rootFolder + '/images/scanSubnet.png'), "&New", self, shortcut=QKeySequence.Refresh, statusTip="Scan subnet", triggered=self.scanSubnet)
+        self.act_scanSubnet = QAction(QIcon(rootFolder + '/ico/scan'), "&New", self, shortcut=QKeySequence.Refresh, statusTip="Scan subnet", triggered=self.scanSubnet)
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
