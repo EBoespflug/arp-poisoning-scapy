@@ -55,12 +55,26 @@ class HostWidget(QWidget):
         hlayout.addWidget(self.deleteButton)
         self.setLayout(hlayout)
 
+    def stopAll(self):
+        """This method stop all activity (destroy the thread and remove iptables rules)."""
+        self.setMitM(False)
+        self.setForward(False)
+
     def setMitM(self, value):
         """Active or desactive the MitM attack depending on the specified value."""
         if value:
             print("ARP")
         else:
             print("not ARP")
+
+    def setForward(self, value):
+        """Active or desactive the trafic forwarding between target and router with iptable.
+        If the forwarding is disabled, the target is disconnected to the router."""
+        if value:
+            print("forward")
+        else:
+            print("no forward")
+
 
     def __setPoisoningChecked(self, value):
         if value:
@@ -81,6 +95,7 @@ class HostWidget(QWidget):
     def onDisconnect(self, clicked):
         self.setMitM(clicked)
         if clicked:
+            self.setForward(False)
             self.__setPoisoningChecked(False)
             self.__setDisconnectChecked(True)
         else:
@@ -90,6 +105,7 @@ class HostWidget(QWidget):
     def onPoison(self, clicked):
         self.setMitM(clicked)
         if clicked:
+            self.setForward(True)
             self.__setPoisoningChecked(True)
             self.__setDisconnectChecked(False)
         else:
