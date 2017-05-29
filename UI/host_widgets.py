@@ -17,7 +17,7 @@ def PARPThread(target, router, stopEvent):
         time.sleep(1)
 
 class HostWidget(QWidget):
-    sig_closed = pyqtSignal()
+    sig_closed = pyqtSignal(QWidget)
 
     def __init__(self, host):
         super(HostWidget, self).__init__()
@@ -64,11 +64,13 @@ class HostWidget(QWidget):
         self.setForward(False)
 
     def isInUse(self):
+        """Returns true if the host is currently used (Poisoning or Disconnected), false otherwise."""
         if self.mitm:
             return True
         return False
 
     def onClose(self):
+        """Slot called when the user click sur the close button. Close the host and emit a close signal. If the host is in use, display a message to the user to confirm."""
         closeHost = True
         if self.isInUse():
             buttonReply = QMessageBox.question(self, "Host in use", "The host" + str(self.host.ip) + " [" + str(self.host.mac) + "] is currently in use.\nDo you want to remove it anyway ?")
@@ -76,8 +78,7 @@ class HostWidget(QWidget):
                 closeHost = False
 
         if closeHost:
-            print("closing host")
-            self.sig_closed.emit()
+            self.sig_closed.emit(self)
 
     def setMitM(self, value):
         """Active or desactive the MitM attack depending on the specified value."""
@@ -148,7 +149,10 @@ class HostListWidget(QWidget):
     def refreshHosts(self, hosts):
         for host in hosts:
             # check for duplicates.
-            self.mainLayout.addWidget(HostWidget(host))
+            hw = HostWidget(host)
+            self.mainLayout.addWidget(hw)
+            hw.sig_closed.connect(self.onHostClosed)
 
     def onHostClosed(self, host):
-        print("attempt to close")
+        host.deleteLater()
+        self.mainLayout.removeWidget(host)
