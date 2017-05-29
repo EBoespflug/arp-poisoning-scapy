@@ -144,15 +144,28 @@ class HostListWidget(QWidget):
         super(HostListWidget, self).__init__()
         self.mainLayout = QVBoxLayout()
         self.setLayout(self.mainLayout)
-        self.hosts = []
+        self.host_dic = {}
 
     def refreshHosts(self, hosts):
+        """Refrech the list of the host with a new list. Duplicate host are not refreshed."""
         for host in hosts:
-            # check for duplicates.
-            hw = HostWidget(host)
-            self.mainLayout.addWidget(hw)
-            hw.sig_closed.connect(self.onHostClosed)
+            if host.mac in self.host_dic:
+                print(str(host.mac) + "is already in the list.")
 
-    def onHostClosed(self, host):
-        host.deleteLater()
-        self.mainLayout.removeWidget(host)
+                # Check for changes.
+
+                return
+            else:
+                hw = HostWidget(host)
+                self.mainLayout.addWidget(hw)
+                hw.sig_closed.connect(self.onHostClosed)
+                self.host_dic[str(host.mac)] = hw
+
+    def onHostClosed(self, host_widget):
+        host_widget.deleteLater()
+        self.mainLayout.removeWidget(host_widget)
+        mac = host_widget.host.mac
+        if mac in self.host_dic:
+            del self.host_dic[mac]
+        else:
+            print("internal error: the host [" + str(mac) + "] is not in the list.")
