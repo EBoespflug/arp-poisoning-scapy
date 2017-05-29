@@ -1,9 +1,9 @@
 from PyQt5.QtCore import (QFile, QFileInfo, QPoint, QRect, QSettings, QSize,
         Qt, QTextStream)
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (QHBoxLayout, QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QTextEdit)
+from PyQt5.QtWidgets import (QHBoxLayout, QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QTextEdit, QMessageBox)
 
-import sys
+import sys, os
 sys.path.append('core/')
 sys.path.append('UI/')
 
@@ -27,12 +27,15 @@ class MainWindow(QMainWindow):
         self.loadSettings()
         self.setMinimumSize(800, 600)
 
+        if os.geteuid() != 0:
+            print("WARNING: The application seems have been launched without root privilege.")
+            QMessageBox.warning(self, "Invalid privileges", "The application seems to have been launched without root privileges.\nPlease restart the appplication with sudo to access to all features.")
+
     def about(self):
         QMessageBox.about(self, "ARP Poisoning", self.tr("TODO()"))
 
     def scanSubnet(self):
         hosts = arping("192.168.1.*")
-        #hosts = [Host("", "", "")]
         print(hosts)
         self.hostList.refreshHosts(hosts)
 

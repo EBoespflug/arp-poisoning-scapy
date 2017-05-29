@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import (QListWidget, QLineEdit, QListWidgetItem, QHBoxLayout, QVBoxLayout, QPushButton, QWidget)
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import (QIcon)
-from PyQt5.QtCore import (QSize)
+from PyQt5.QtCore import (QSize, pyqtSignal)
 import sys
 sys.path.append('../core/')
 sys.path.append('../')
@@ -11,19 +11,21 @@ import time, threading
 import resources
 
 
-def PARPThread(target, router):
-    while(True):
+def PARPThread(target, router, stopEvent):
+    while(not stopEvent.is_set()):
         send_arp(target, router)
         time.sleep(1)
 
 class HostWidget(QWidget):
+    sig_closed = pyqtSignal()
+
     def __init__(self, host):
         super(HostWidget, self).__init__()
 
         self.mitm = False
 
         self.host = host
-        self.arpTread = None
+        self.arpThread = None
 
         self.createWidgets()
 
@@ -45,6 +47,7 @@ class HostWidget(QWidget):
         self.poisoningButton.setCheckable(True)
         self.poisoningButton.clicked.connect(self.onPoison)
         self.deleteButton = QPushButton(QIcon(":/ico/delete"), "")
+        self.deleteButton.clicked.connect(self.onClose)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.ipText)
@@ -60,11 +63,35 @@ class HostWidget(QWidget):
         self.setMitM(False)
         self.setForward(False)
 
+    def isInUse(self):
+        if self.mitm:
+            return True
+        return False
+
+    def onClose(self):
+        closeHost = True
+        if self.isInUse():
+            buttonReply = QMessageBox.question(self, "Host in use", "The host" + str(self.host.ip) + " [" + str(self.host.mac) + "] is currently in use.\nDo you want to remove it anyway ?")
+            if not buttonReply == QMessageBox.Yes:
+                closeHost = False
+
+        if closeHost:
+            print("closing host")
+            self.sig_closed.emit()
+
     def setMitM(self, value):
         """Active or desactive the MitM attack depending on the specified value."""
         if value:
-            print("ARP")
+            self.mitm = True
+            if self.arpThread is None:
+                self.arpThread_stop = threading.Event()
+                self.arpThread = threading.Thread(target=PARPThread, args=(self.host, Host("192.168.1.1", "192.168.1.1", "192.168.1.1"), self.arpThread_stop))
+                self.arpThread.start()
         else:
+            self.mitm = False
+            if self.arpThread is not None:
+                self.arpThread_stop.set() # note that this doesn't really kill the thread, another method should be used later...
+                self.arpThread = None
             print("not ARP")
 
     def setForward(self, value):
@@ -74,7 +101,6 @@ class HostWidget(QWidget):
             print("forward")
         else:
             print("no forward")
-
 
     def __setPoisoningChecked(self, value):
         if value:
@@ -115,14 +141,14 @@ class HostWidget(QWidget):
 class HostListWidget(QWidget):
     def __init__(self):
         super(HostListWidget, self).__init__()
-        #self.hostsWidget
         self.mainLayout = QVBoxLayout()
         self.setLayout(self.mainLayout)
+        self.hosts = []
 
     def refreshHosts(self, hosts):
         for host in hosts:
+            # check for duplicates.
             self.mainLayout.addWidget(HostWidget(host))
 
-
-    def Clicked(self,item):
-       pass
+    def onHostClosed(self, host):
+        print("attempt to close")
