@@ -1,0 +1,2 @@
+pyrcc5 main.qrc -o resources.py
+sudo python3 main.py
